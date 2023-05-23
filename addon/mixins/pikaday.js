@@ -5,7 +5,7 @@ import Mixin from '@ember/object/mixin';
 
 import { assign } from '@ember/polyfills';
 import { isPresent } from '@ember/utils';
-import { run, next } from '@ember/runloop';
+import { bind, next, later, cancel } from '@ember/runloop';
 import { getProperties, computed } from '@ember/object';
 import moment from 'moment';
 
@@ -59,10 +59,10 @@ export default Mixin.create({
       field: this.get('field'),
       container: this.get('pikadayContainer'),
       bound: this.get('pikadayContainer') ? false : true,
-      onOpen: run.bind(this, this.onPikadayOpen),
-      onClose: run.bind(this, this.onPikadayClose),
-      onSelect: run.bind(this, this.onPikadaySelect),
-      onDraw: run.bind(this, this.onPikadayRedraw),
+      onOpen: bind(this, this.onPikadayOpen),
+      onClose: bind(this, this.onPikadayClose),
+      onSelect: bind(this, this.onPikadaySelect),
+      onDraw: bind(this, this.onPikadayRedraw),
       firstDay: typeof firstDay !== 'undefined' ? parseInt(firstDay, 10) : 1,
       format: this.get('format') || 'DD.MM.YYYY',
       yearRange: this.determineYearRange(),
@@ -83,7 +83,7 @@ export default Mixin.create({
   didUpdateAttrs() {
     this.set(
       'cancelToken',
-      run.later(() => {
+      later(() => {
         // Do not set or update anything when the component is destroying.
         if (this.get('isDestroying') || this.get('isDestroyed')) {
           return;
@@ -119,7 +119,7 @@ export default Mixin.create({
   willDestroyElement() {
     this._super();
     this.get('pikaday').destroy();
-    run.cancel(this.get('cancelToken'));
+    cancel(this.get('cancelToken'));
   },
 
   setPikadayDate() {
